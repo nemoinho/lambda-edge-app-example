@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "deploy": "npm run build && terraform apply -auto-approve",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
