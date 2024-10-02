@@ -51,6 +51,23 @@ resource "aws_cloudfront_distribution" "this" {
     origin_id                = local.s3_origin_id
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
   }
+  ordered_cache_behavior {
+    allowed_methods        = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
+    cached_methods         = ["HEAD", "GET", "OPTIONS"]
+    target_origin_id       = local.s3_origin_id
+    viewer_protocol_policy = "allow-all"
+    min_ttl                = 0
+    default_ttl            = 300
+    max_ttl                = 600
+    compress               = true
+    path_pattern           = "*.*"
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
   default_cache_behavior {
     allowed_methods        = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
     cached_methods         = ["HEAD", "GET", "OPTIONS"]
@@ -139,6 +156,19 @@ data "aws_iam_policy_document" "this" {
   }
 }
 
+resource "null_resource" "update_bucket" {
+  depends_on = [
+    aws_s3_bucket.this,
+    data.archive_file.this,
+  ]
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+  provisioner "local-exec" {
+    command = "aws s3 cp .output/public s3://${aws_s3_bucket.this.id}/ --recursive"
+  }
+}
+
 terraform {
   required_providers {
     aws = {
@@ -147,6 +177,8 @@ terraform {
     }
   }
 }
+
+provider "null" {}
 
 provider "aws" {
   region = "eu-central-1"
