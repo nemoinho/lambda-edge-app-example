@@ -1,0 +1,4 @@
+= Simple demonstration how to deploy Nuxt on Lambda@Edge
+
+Just Scroll through and figure out what's going on.
+The key for a successful deployment is the nuxt-config and the lambda@edge directory.
